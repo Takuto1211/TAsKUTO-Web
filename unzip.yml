@@ -1,0 +1,40 @@
+name: Extract TAsKUTO project
+
+on:
+  push:
+    paths:
+      - "taskuto-web.zip"
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract ZIP
+        run: |
+          rm -rf .tmp-taskuto
+          mkdir .tmp-taskuto
+          unzip -q taskuto-web.zip -d .tmp-taskuto
+
+          if [ -d ".tmp-taskuto/taskuto-web" ]; then
+            cp -R .tmp-taskuto/taskuto-web/. .
+          else
+            cp -R .tmp-taskuto/. .
+          fi
+
+          rm -rf .tmp-taskuto
+          rm -f taskuto-web.zip
+
+      - name: Commit extracted project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet || git commit -m "Import TAsKUTO Web project"
+          git push
